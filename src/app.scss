@@ -1,0 +1,12 @@
+@import "@material/typography/mdc-typography";
+
+body {
+  --mdc-theme-primary: rgb(252 108 9);
+
+  margin: 0;
+  font-family:
+    var(
+      --mdc-typography-headline5-font-family,
+      var(--mdc-typography-font-family, Roboto, sans-serif)
+    );
+}

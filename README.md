@@ -1,0 +1,3 @@
+# Deocalc
+
+Simple farming calculator
