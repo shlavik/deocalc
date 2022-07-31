@@ -15,7 +15,7 @@
   $: feePayback = feeUsd / incomePerDay;
 </script>
 
-<div id="profit-forecast">
+<div id="profit-prediction">
   <p>
     <Textfield
       class="shaped-outlined"
@@ -68,7 +68,7 @@
     <dt>Stake payback period:</dt>
     <dd>{@html renderValue(stakePayback, "days")}</dd>
 
-    <dt>Fee² payback period:</dt>
+    <dt>Fee payback period:</dt>
     <dd>{@html renderValue(feePayback, "days")}</dd>
   </dl>
 
@@ -82,7 +82,7 @@
 </div>
 
 <style>
-  #profit-forecast {
+  #profit-prediction {
   }
 
   dl {

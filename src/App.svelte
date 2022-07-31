@@ -4,21 +4,40 @@
   import Tab from "@smui/tab";
   import TabBar from "@smui/tab-bar";
 
-  import ProfitForecast from "./ProfitForecast.svelte";
+  import { url } from "./utils";
+
+  import ProfitPrediction from "./ProfitPrediction.svelte";
   import ImpermanentLoss from "./ImpermanentLoss.svelte";
 
   const keys = {
-    PROFIT_FORECAST: "Profit Forecast",
-    IMPERMANENT_LOSS: "Impermanent Loss",
+    PROFIT_PREDICTION: "PROFIT_PREDICTION",
+    IMPERMANENT_LOSS: "IMPERMANENT_LOSS",
   };
-  const tabs = [keys.PROFIT_FORECAST, keys.IMPERMANENT_LOSS];
+
+  const tabs = [keys.PROFIT_PREDICTION, keys.IMPERMANENT_LOSS];
+
+  const labels = {
+    [keys.PROFIT_PREDICTION]: "Profit Prediction",
+    [keys.IMPERMANENT_LOSS]: "Impermanent Loss",
+  };
+
   const titles = {
-    [keys.PROFIT_FORECAST]: "Roughly estimate how much you can earn",
+    [keys.PROFIT_PREDICTION]: "Roughly estimate how much you can earn",
     [keys.IMPERMANENT_LOSS]:
       "Estimate loss in liquidity pool comparing it to holding value",
   };
 
-  let active = keys.PROFIT_FORECAST;
+  const urls = {
+    [keys.PROFIT_PREDICTION]: "profit-prediction",
+    [keys.IMPERMANENT_LOSS]: "impermanent-loss",
+    "profit-prediction": keys.PROFIT_PREDICTION,
+    "impermanent-loss": keys.IMPERMANENT_LOSS,
+  };
+
+  let active = keys.PROFIT_PREDICTION;
+
+  $: hash = $url.hash.slice(2);
+  $: if (urls[hash]) active = urls[hash];
 </script>
 
 <main>
@@ -40,13 +59,13 @@
       </p>
 
       <TabBar {tabs} let:tab bind:active>
-        <Tab {tab} title={titles[tab]}>
-          <Label>{tab}</Label>
+        <Tab {tab} title={titles[tab]} href={"#/" + urls[tab]}>
+          <Label>{labels[tab]}</Label>
         </Tab>
       </TabBar>
 
-      {#if active === keys.PROFIT_FORECAST}
-        <ProfitForecast />
+      {#if active === keys.PROFIT_PREDICTION}
+        <ProfitPrediction />
       {/if}
 
       {#if active === keys.IMPERMANENT_LOSS}
@@ -57,11 +76,6 @@
 </main>
 
 <style>
-  main {
-    width: 420px;
-    max-height: 100%;
-  }
-
   @media (max-width: 420px) {
     main {
       width: 100%;
