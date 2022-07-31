@@ -1,0 +1,43 @@
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  --color-green-dark: #066452;
+  --color-green-light: #28ebc8;
+  --color-orange: #fc6c09;
+  --color-purple: #592d71;
+  --mdc-theme-primary: var(--color-orange);
+  --mdc-text-button-label-text-color: var(--color-purple);
+
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(90deg, var(--color-green-dark) 0%, var(--color-green-light) 150%);
+  font-family:
+    var(
+      --mdc-typography-headline5-font-family,
+      var(--mdc-typography-font-family, Roboto, sans-serif)
+    );
+}
+
+.mdc-card {
+  overflow: hidden;
+  margin: 4px;
+}
+
+.mdc-tab-bar {
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+}
+
+.smui-button--color-secondary:not(:disabled) {
+  color: var(--color-green-dark);
+}
+
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: var(--color-orange);
+}

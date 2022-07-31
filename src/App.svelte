@@ -1,126 +1,71 @@
 <script>
   import Button, { Label } from "@smui/button";
   import Card, { Content } from "@smui/card";
-  import Textfield from "@smui/textfield";
+  import Tab from "@smui/tab";
+  import TabBar from "@smui/tab-bar";
 
-  let stakeDollars;
-  let aprPercent;
-  let feePercent;
+  import ProfitForecast from "./ProfitForecast.svelte";
+  import ImpermanentLoss from "./ImpermanentLoss.svelte";
 
-  $: feeDollars = (stakeDollars * feePercent) / 100 || 0;
-  $: stakeMinusFee = stakeDollars - feeDollars || 0;
-  $: incomePerYear = (stakeMinusFee * aprPercent) / 100 || 0;
-  $: incomePerDay = incomePerYear / 365;
-  $: stakePayback = stakeDollars / incomePerDay || 0;
-  $: feePayback = feeDollars / incomePerDay || 0;
+  const keys = {
+    PROFIT_FORECAST: "Profit Forecast",
+    IMPERMANENT_LOSS: "Impermanent Loss",
+  };
+  const tabs = [keys.PROFIT_FORECAST, keys.IMPERMANENT_LOSS];
+  const titles = {
+    [keys.PROFIT_FORECAST]: "Roughly estimate how much you can earn",
+    [keys.IMPERMANENT_LOSS]:
+      "Estimate loss in liquidity pool comparing it to holding value",
+  };
+
+  let active = keys.PROFIT_FORECAST;
 </script>
 
 <main>
   <Card>
     <Content>
-      <p class="mdc-typography--headline5" style:text-align="center">
-        Demeter Farming calculator
-      </p>
-
-      <p class="description mdc-typography--caption">
-        Allows roughly estimate how much you can earn from farming, providing
-        that Stake (LP) currencies prices in USD equivalent, DEO price and APR
-        remain stable all time
-      </p>
-
-      <p class="row">
-        <Textfield
-          class="shaped-outlined"
-          input$emptyValueUndefined
-          input$min={0}
-          label="Stake (LP)"
-          prefix="$"
-          style="flex: 1"
-          type="number"
-          variant="outlined"
-          bind:value={stakeDollars}
-        />
-      </p>
-
-      <p class="row">
-        <Textfield
-          class="shaped-outlined"
-          input$emptyValueUndefined
-          input$max={999}
-          input$min={0}
-          label="APR"
-          prefix="%"
-          style="flex: 1"
-          type="number"
-          variant="outlined"
-          bind:value={aprPercent}
-        />
-
-        <Textfield
-          class="shaped-outlined"
-          input$emptyValueUndefined
-          input$max={99}
-          input$min={0}
-          label="Fee"
-          prefix="%"
-          style="flex: 1"
-          type="number"
-          variant="outlined"
-          bind:value={feePercent}
-        />
-      </p>
-
-      <dl>
-        <dt>Income per year:</dt>
-        <dd>${incomePerYear.toFixed(2)}</dd>
-
-        <dt>Income per day:</dt>
-        <dd>${incomePerDay.toFixed(2)}</dd>
-
-        <dt>Stake payback period:</dt>
-        <dd>{stakePayback.toFixed(1)} days</dd>
-
-        <dt>Fee payback period:</dt>
-        <dd>{feePayback.toFixed(1)} days</dd>
-      </dl>
-
-      <p style:padding="0 8px">
-        <Button href="https://farming.deotoken.io" target="_blank">
-          <Label>farming.deotoken.io</Label>
+      <p class="mdc-typography--button" style:text-align="center">
+        <Button
+          href="https://farming.deotoken.io"
+          target="_blank"
+          color="secondary"
+        >
+          <Label>Demeter&nbsp;Farming</Label>
         </Button>
-        <Button href="https://polkaswap.io/" target="_blank">
-          <Label>polkaswap.io</Label>
+        <span>&</span>
+        <Button href="https://polkaswap.io/#/swap" target="_blank">
+          <Label>Polkaswap</Label>
         </Button>
+        <span>calculator</span>
       </p>
+
+      <TabBar {tabs} let:tab bind:active>
+        <Tab {tab} title={titles[tab]}>
+          <Label>{tab}</Label>
+        </Tab>
+      </TabBar>
+
+      {#if active === keys.PROFIT_FORECAST}
+        <ProfitForecast />
+      {/if}
+
+      {#if active === keys.IMPERMANENT_LOSS}
+        <ImpermanentLoss />
+      {/if}
     </Content>
   </Card>
 </main>
 
 <style>
-  dl {
-    display: grid;
-    padding: 16px 0;
-    gap: 16px;
-    grid: auto-flow / 1fr 1fr;
-  }
-
-  dt,
-  dd {
-    margin-inline-start: 16px;
-  }
-
   main {
-    position: absolute;
-    max-width: 420px;
+    overflow: hidden;
+    width: 420px;
+    max-height: 100%;
   }
 
-  .description {
-    padding: 0 16px 24px;
-    text-align: justify;
-  }
-
-  .row {
-    display: flex;
-    gap: 16px;
+  @media (max-width: 420px) {
+    main {
+      width: 100%;
+    }
   }
 </style>
