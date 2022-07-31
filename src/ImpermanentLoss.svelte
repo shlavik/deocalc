@@ -3,6 +3,8 @@
   import Textfield from "@smui/textfield";
   import HelperText from "@smui/textfield/helper-text";
 
+  import { renderValue } from "./utils";
+
   let a1;
   let b1;
   let a2;
@@ -17,7 +19,7 @@
   $: hodl = x1 * a2 + y1 * b2;
   $: pool = x2 * a2 + y2 * b2;
   $: loss = pool / hodl - 1;
-  $: result = -100 * loss;
+  $: result = renderValue(-100 * loss, "%");
 </script>
 
 <div id="impermanent-loss">
@@ -89,10 +91,8 @@
 
   <p style:text-align="center">
     <span>Impermanent loss:</span>
-    {#if Number.isNaN(result)}
-      <strong>N/A</strong>
-    {:else}
-      <strong>{result.toFixed(2)}</strong>&nbsp;<span>%</span>
+    {@html result}
+    {#if result !== "N/A"}
       <div
         class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent"
       >

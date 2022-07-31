@@ -1,16 +1,18 @@
 <script>
   import Textfield from "@smui/textfield";
 
+  import { renderValue } from "./utils";
+
   let stakeUsd;
   let aprPercent;
   let feePercent;
 
   $: feeUsd = (stakeUsd * feePercent) / 100 || 0;
-  $: stakeMinusFee = stakeUsd - feeUsd || 0;
-  $: incomePerYear = (stakeMinusFee * aprPercent) / 100 || 0;
+  $: stakeMinusFee = stakeUsd - feeUsd;
+  $: incomePerYear = (stakeMinusFee * aprPercent) / 100;
   $: incomePerDay = incomePerYear / 365;
-  $: stakePayback = stakeUsd / incomePerDay || 0;
-  $: feePayback = feeUsd / incomePerDay || 0;
+  $: stakePayback = stakeUsd / incomePerDay;
+  $: feePayback = feeUsd / incomePerDay;
 </script>
 
 <div id="profit-forecast">
@@ -19,7 +21,7 @@
       class="shaped-outlined"
       input$emptyValueUndefined
       input$min={0}
-      label="LP sum or Stake *"
+      label="Stake¹"
       prefix="$"
       style="width: 100%"
       type="number"
@@ -34,7 +36,7 @@
       input$emptyValueUndefined
       input$max={999}
       input$min={0}
-      label="APR *"
+      label="APR¹"
       prefix="%"
       style="flex: 1"
       type="number"
@@ -47,7 +49,7 @@
       input$emptyValueUndefined
       input$max={99}
       input$min={0}
-      label="Fee"
+      label="Fee²"
       prefix="%"
       style="flex: 1"
       type="number"
@@ -58,30 +60,24 @@
 
   <dl>
     <dt>Income per year:</dt>
-    <dd>
-      <span>$</span>&nbsp;<strong>{incomePerYear.toFixed(2)}</strong>
-    </dd>
+    <dd>{@html renderValue(incomePerYear, "$")}</dd>
 
     <dt>Income per day:</dt>
-    <dd>
-      <span>$</span>&nbsp;<strong>{incomePerDay.toFixed(2)}</strong>
-    </dd>
+    <dd>{@html renderValue(incomePerDay, "$")}</dd>
 
     <dt>Stake payback period:</dt>
-    <dd>
-      <strong>{stakePayback.toFixed(1)}</strong>
-      <span>days</span>
-    </dd>
+    <dd>{@html renderValue(stakePayback, "days")}</dd>
 
-    <dt>Fee payback period:</dt>
-    <dd>
-      <strong>{feePayback.toFixed(1)}</strong>
-      <span>days</span>
-    </dd>
+    <dt>Fee² payback period:</dt>
+    <dd>{@html renderValue(feePayback, "days")}</dd>
   </dl>
 
   <p class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent">
-    * Assumed that will remain stable all time
+    ¹ Assumed that will remain stable all time
+  </p>
+
+  <p class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent">
+    ² Demeter farming on stake fee
   </p>
 </div>
 
@@ -114,7 +110,10 @@
   }
 
   .mdc-text-field-helper-text {
-    margin: 16px 0;
     text-align: center;
+  }
+
+  .mdc-text-field-helper-text ~ .mdc-text-field-helper-text {
+    margin-bottom: 16px;
   }
 </style>

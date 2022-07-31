@@ -58,7 +58,6 @@
 
 <style>
   main {
-    overflow: hidden;
     width: 420px;
     max-height: 100%;
   }
