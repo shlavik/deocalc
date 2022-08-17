@@ -4,10 +4,10 @@
   import Tab from "@smui/tab";
   import TabBar from "@smui/tab-bar";
 
-  import { url } from "./utils";
-
   import ProfitPrediction from "./ProfitPrediction.svelte";
   import ImpermanentLoss from "./ImpermanentLoss.svelte";
+
+  import { url } from "./stores.js";
 
   const keys = {
     PROFIT_PREDICTION: "PROFIT_PREDICTION",
@@ -76,6 +76,10 @@
 </main>
 
 <style>
+  main {
+    overflow: hidden;
+  }
+
   @media (max-width: 420px) {
     main {
       width: 100%;

@@ -1,11 +1,11 @@
 <script>
   import Textfield from "@smui/textfield";
 
-  import { renderValue } from "./utils";
+  import { renderValue } from "./utils.js";
 
-  let stakeUsd;
-  let aprPercent;
-  let feePercent;
+  let stakeUsd = 9000;
+  let aprPercent = 146;
+  let feePercent = 2;
 
   $: feeUsd = (stakeUsd * feePercent) / 100 || 0;
   $: stakeMinusFee = stakeUsd - feeUsd;

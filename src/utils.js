@@ -1,32 +1,10 @@
-import { derived, writable } from "svelte/store";
-
-export const url = createUrlStore();
-
-export function createUrlStore(ssrUrl) {
-  if (typeof window === "undefined") {
-    const { subscribe } = writable(ssrUrl);
-    return { subscribe };
-  }
-
-  const href = writable(window.location.href);
-  const originalPushState = history.pushState;
-  const originalReplaceState = history.replaceState;
-  const updateHref = () => href.set(window.location.href);
-
-  history.pushState = function () {
-    originalPushState.apply(this, arguments);
-    updateHref();
-  };
-  history.replaceState = function () {
-    originalReplaceState.apply(this, arguments);
-    updateHref();
-  };
-
-  window.addEventListener("popstate", updateHref);
-  window.addEventListener("hashchange", updateHref);
-
-  return {
-    subscribe: derived(href, ($href) => new URL($href)).subscribe,
+export function debounce(f, ms) {
+  let isCooldown = false;
+  return function () {
+    if (isCooldown) return;
+    f.apply(this, arguments);
+    isCooldown = true;
+    setTimeout(() => (isCooldown = false), ms);
   };
 }
 
@@ -46,4 +24,27 @@ export function renderValue(value, type) {
     return `<strong>${toSmall + value.toFixed(1)}</strong> <span>days</span>`;
   }
   return ``;
+}
+
+function normalizePrice(value) {
+  if (value >= 1) return value.toFixed(2);
+  let counter = 0;
+  while (value < 1) {
+    value = 10 * value;
+    counter++;
+  }
+  return Math.trunc(100 * value) / 10 ** (counter + 2);
+}
+
+export async function fetchPrice(coinId, dateIso) {
+  if (!coinId || !dateIso) return;
+  const [yy, mm, dd] = dateIso.split("-");
+  return fetch(
+    "https://api.coingecko.com/api/v3/coins/" +
+      coinId +
+      "/history?date=" +
+      `${dd}-${mm}-${yy}`
+  )
+    .then((res) => res.json())
+    .then((res) => normalizePrice(res.market_data.current_price.usd));
 }

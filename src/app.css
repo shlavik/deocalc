@@ -24,8 +24,28 @@ body,
     );
 }
 
+input {
+  font-weight: 500 !important;
+}
+
+* {
+  scrollbar-color: var(--color-orange) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  margin-top: var(--header-height);
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-orange);
+}
+
 .mdc-card {
-  overflow: hidden;
   margin: 4px;
 }
 
@@ -34,8 +54,25 @@ body,
   margin: 0 -16px;
 }
 
+.smui-autocomplete,
+.smui-autocomplete label {
+  width: 100%;
+}
+
+.smui-autocomplete ~ .clear {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  bottom: 0;
+  margin: auto;
+}
+
 .smui-button--color-secondary:not(:disabled) {
   color: var(--color-green-dark);
+}
+
+.mdc-text-field {
+  width: 100%;
 }
 
 .mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label {
