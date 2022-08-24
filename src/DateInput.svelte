@@ -1,5 +1,11 @@
 <script>
-  import { formatISO, parseISO, startOfDay } from "date-fns";
+  import {
+    addHours,
+    compareAsc,
+    formatISO,
+    parseISO,
+    startOfDay,
+  } from "date-fns";
 
   import Textfield from "@smui/textfield";
   import Datepicker from "praecox-datepicker";
@@ -21,7 +27,7 @@
   let pickerDone = true;
 
   function input(date) {
-    internal = formatISO(date).slice(0, 10);
+    internal = formatISO(date, { representation: "date" });
   }
 
   function output(iso) {
@@ -42,6 +48,11 @@
   $: if (pickerDone) {
     showDatepicker = false;
   }
+  $: invalid =
+    compareAsc(
+      parseISO(internal),
+      addHours(parseISO(new Date().toISOString().slice(0, 10)), 1)
+    ) === 1;
 </script>
 
 <div
@@ -54,6 +65,7 @@
     class="shaped-outlined"
     input$emptyValueUndefined
     {disabled}
+    {invalid}
     {label}
     {name}
     type="date"

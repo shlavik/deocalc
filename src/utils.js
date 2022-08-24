@@ -1,29 +1,11 @@
-export function debounce(f, ms) {
+export function debounce(fn, ms) {
   let isCooldown = false;
   return function () {
     if (isCooldown) return;
-    f.apply(this, arguments);
+    fn.apply(this, arguments);
     isCooldown = true;
     setTimeout(() => (isCooldown = false), ms);
   };
-}
-
-export function renderValue(value, type) {
-  if (Number.isNaN(value)) {
-    return `N/A`;
-  }
-  let toSmall = 0 < value && value < 0.01 ? "<span>&lt;</span>" : "";
-  if (type === "%") {
-    return `<strong>${toSmall + value.toFixed(2)}</strong>&nbsp;<span>%</span>`;
-  }
-  if (type === "$") {
-    return `<span>$</span>&nbsp;<strong>${toSmall + value.toFixed(2)}</strong>`;
-  }
-  toSmall = 0 < value && value < 0.1 ? "<span>&lt;</span>" : "";
-  if (type === "days") {
-    return `<strong>${toSmall + value.toFixed(1)}</strong> <span>days</span>`;
-  }
-  return ``;
 }
 
 function normalizePrice(value) {
@@ -47,4 +29,24 @@ export async function fetchPrice(coinId, dateIso) {
   )
     .then((res) => res.json())
     .then((res) => normalizePrice(res.market_data.current_price.usd));
+}
+
+export function renderValue(value, type) {
+  if (Number.isNaN(value)) {
+    return `N/A`;
+  }
+  let toSmall = 0 < value && value < 0.01 ? "<span>&lt;</span>" : "";
+  if (type === "%") {
+    return `<strong>${toSmall + value.toFixed(2)}</strong><span>%</span>`;
+  }
+  if (type === "$") {
+    return `<span>$</span>&nbsp;<strong>${toSmall + value.toFixed(2)}</strong>`;
+  }
+  toSmall = 0 < value && value < 0.1 ? "<span>&lt;</span>" : "";
+  if (type === "days") {
+    return `<strong>${
+      toSmall + value.toFixed(1)
+    }</strong>&nbsp;<span>days</span>`;
+  }
+  return ``;
 }

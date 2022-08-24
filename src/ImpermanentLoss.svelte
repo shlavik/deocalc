@@ -1,8 +1,9 @@
 <script>
   import Autocomplete from "@smui-extra/autocomplete";
   import IconButton, { Icon } from "@smui/icon-button";
+  import LinearProgress from "@smui/linear-progress";
   import Textfield from "@smui/textfield";
-  import { formatISO, parseISO } from "date-fns";
+  import { addHours, formatISO, parseISO, subHours } from "date-fns";
   import DateInput from "./DateInput.svelte";
 
   import tokens from "./tokens.json";
@@ -12,17 +13,21 @@
   let elAutocompleteB;
   let tokenA = tokens[0];
   let tokenB = tokens[5];
-  let a1;
-  let a2;
-  let b1;
-  let b2;
   let dateInitial = parseISO("2022-06-01");
-  let dateFuture = new Date();
+  let dateFuture = addHours(parseISO(new Date().toISOString().slice(0, 10)), 1);
+  let aInitialPrice;
+  let aInitialLoading;
+  let aFuturePrice;
+  let aFutureLoading;
+  let bInitialPrice;
+  let bInitialLoading;
+  let bFuturePrice;
+  let bFutureLoading;
 
   async function search(input) {
     if (input === "") return tokens;
     return tokens.filter(({ symbol }) =>
-      symbol.toLowerCase().startsWith(input.toLowerCase())
+      symbol.toLowerCase().includes(input.toLowerCase())
     );
   }
 
@@ -30,42 +35,60 @@
     return option?.symbol || "";
   }
 
-  const fetchA1PriceDebounced = debounce(
-    (...args) => fetchPrice(...args).then((res) => (a1 = res)),
-    800
-  );
+  const fetchAInitialPriceDebounced = debounce((coinId, dateIso) => {
+    aInitialLoading = true;
+    fetchPrice(coinId, dateIso)
+      .then((price) => (aInitialPrice = price))
+      .catch(() => (aInitialPrice = undefined))
+      .finally(() => (aInitialLoading = false));
+  }, 800);
 
-  const fetchA2PriceDebounced = debounce(
-    (...args) => fetchPrice(...args).then((res) => (a2 = res)),
-    800
-  );
+  const fetchAFuturePriceDebounced = debounce((coinId, dateIso) => {
+    aFutureLoading = true;
+    fetchPrice(coinId, dateIso)
+      .then((price) => (aFuturePrice = price))
+      .catch(() => (aFuturePrice = undefined))
+      .finally(() => (aFutureLoading = false));
+  }, 800);
 
-  const fetchB1PriceDebounced = debounce(
-    (...args) => fetchPrice(...args).then((res) => (b1 = res)),
-    800
-  );
+  const fetchBInitialPriceDebounced = debounce((coinId, dateIso) => {
+    bInitialLoading = true;
+    fetchPrice(coinId, dateIso)
+      .then((price) => (bInitialPrice = price))
+      .catch(() => (bInitialPrice = undefined))
+      .finally(() => (bInitialLoading = false));
+  }, 800);
 
-  const fetchB2PriceDebounced = debounce(
-    (...args) => fetchPrice(...args).then((res) => (b2 = res)),
-    800
-  );
+  const fetchBFuturePriceDebounced = debounce((coinId, dateIso) => {
+    bFutureLoading = true;
+    fetchPrice(coinId, dateIso)
+      .then((price) => (bFuturePrice = price))
+      .catch(() => (bFuturePrice = undefined))
+      .finally(() => (bFutureLoading = false));
+  }, 800);
 
-  $: x1 = 1 / a1;
-  $: y1 = 1 / b1;
+  $: x1 = 1 / aInitialPrice;
+  $: y1 = 1 / bInitialPrice;
   $: k = x1 * y1;
-  $: r = a2 / b2;
+  $: r = aFuturePrice / bFuturePrice;
   $: x2 = Math.sqrt(k / r);
   $: y2 = Math.sqrt(k * r);
-  $: hodl = x1 * a2 + y1 * b2;
-  $: pool = x2 * a2 + y2 * b2;
+  $: hodl = x1 * aFuturePrice + y1 * bFuturePrice;
+  $: pool = x2 * aFuturePrice + y2 * bFuturePrice;
   $: loss = pool / hodl - 1;
   $: result = renderValue(-100 * loss, "%");
-  $: dateInitialString = dateInitial ? formatISO(dateInitial).slice(0, 10) : "";
-  $: dateFutureString = dateFuture ? formatISO(dateFuture).slice(0, 10) : "";
-  $: fetchA1PriceDebounced(tokenA?.id, dateInitialString);
-  $: fetchA2PriceDebounced(tokenA?.id, dateFutureString);
-  $: fetchB1PriceDebounced(tokenB?.id, dateInitialString);
-  $: fetchB2PriceDebounced(tokenB?.id, dateFutureString);
+  $: dateInitialString = dateInitial
+    ? formatISO(dateInitial, { representation: "date" })
+    : "";
+  $: dateFutureString = dateFuture
+    ? formatISO(dateFuture, { representation: "date" })
+    : "";
+  $: fetchAInitialPriceDebounced(tokenA?.id, dateInitialString);
+  $: fetchAFuturePriceDebounced(tokenA?.id, dateFutureString);
+  $: fetchBInitialPriceDebounced(tokenB?.id, dateInitialString);
+  $: fetchBFuturePriceDebounced(tokenB?.id, dateFutureString);
+  $: isLoading =
+    aInitialLoading || aFutureLoading || bInitialLoading || bFutureLoading;
 </script>
 
 <div id="impermanent-loss">
@@ -119,28 +142,22 @@
 
   <dl>
     <dd>
-      <DateInput label="Initial date" name="FromDate" bind:date={dateInitial} />
+      <DateInput label="Initial date" bind:date={dateInitial} />
     </dd>
     <dt />
     <dd>
-      <DateInput
-        label="Future date"
-        name="ToDate"
-        right
-        bind:date={dateFuture}
-      />
+      <DateInput label="Future date" right bind:date={dateFuture} />
     </dd>
 
     <dd>
       <Textfield
         class="shaped-outlined"
         input$emptyValueUndefined
-        label={(tokenA?.symbol || "Token A") +
-          " price at " +
-          (dateInitialString || "initial price")}
+        label={(tokenA?.symbol || "Token A") + " @ " + dateInitialString}
         prefix="$"
         variant="outlined"
-        bind:value={a1}
+        invalid={aInitialPrice === undefined}
+        bind:value={aInitialPrice}
       />
     </dd>
     <dt>
@@ -150,12 +167,11 @@
       <Textfield
         class="shaped-outlined"
         input$emptyValueUndefined
-        label={(tokenA?.symbol || "Token A") +
-          " price at " +
-          (dateFutureString || "future price")}
+        label={(tokenA?.symbol || "Token A") + " @ " + dateFutureString}
         prefix="$"
         variant="outlined"
-        bind:value={a2}
+        invalid={aFuturePrice === undefined}
+        bind:value={aFuturePrice}
       />
     </dd>
 
@@ -163,12 +179,11 @@
       <Textfield
         class="shaped-outlined"
         input$emptyValueUndefined
-        label={(tokenB?.symbol || "Token B") +
-          " price at " +
-          (dateInitialString || "initial price")}
+        label={(tokenB?.symbol || "Token B") + " @ " + dateInitialString}
         prefix="$"
         variant="outlined"
-        bind:value={b1}
+        invalid={bInitialPrice === undefined}
+        bind:value={bInitialPrice}
       />
     </dd>
     <dt>
@@ -178,25 +193,28 @@
       <Textfield
         class="shaped-outlined"
         input$emptyValueUndefined
-        label={(tokenB?.symbol || "Token B") +
-          " price at " +
-          (dateFutureString || "future price")}
+        label={(tokenB?.symbol || "Token B") + " @ " + dateFutureString}
         prefix="$"
         variant="outlined"
-        bind:value={b2}
+        invalid={bFuturePrice === undefined}
+        bind:value={bFuturePrice}
       />
     </dd>
   </dl>
 
   <p style:text-align="center">
-    <span>Impermanent loss:</span>
-    {@html result}
+    <span class="mdc-typography--headline6">
+      Impermanent loss: {@html result}
+    </span>
+
     <span
       class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent"
     >
-      (prices provided by CoinGecko)
+      prices provided by CoinGecko
     </span>
   </p>
+
+  <LinearProgress indeterminate closed={!isLoading} />
 </div>
 
 <style>
@@ -220,6 +238,13 @@
 
   :global(#impermanent-loss li.mdc-deprecated-list-item) {
     height: 32px;
+  }
+
+  :global(#impermanent-loss .mdc-linear-progress) {
+    position: absolute;
+    bottom: 0;
+    margin-left: -16px;
+    border-radius: var(--mdc-shape-medium, 4px);
   }
 
   dl {

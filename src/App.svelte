@@ -22,7 +22,8 @@
   };
 
   const titles = {
-    [keys.PROFIT_PREDICTION]: "Roughly estimate how much you can earn",
+    [keys.PROFIT_PREDICTION]:
+      "Roughly estimate fee payback period and how much you can earn",
     [keys.IMPERMANENT_LOSS]:
       "Estimate loss in liquidity pool comparing it to holding value",
   };
@@ -64,13 +65,15 @@
         </Tab>
       </TabBar>
 
-      {#if active === keys.PROFIT_PREDICTION}
-        <ProfitPrediction />
-      {/if}
+      <wrapper style:display="contents" title={titles[active]}>
+        {#if active === keys.PROFIT_PREDICTION}
+          <ProfitPrediction />
+        {/if}
 
-      {#if active === keys.IMPERMANENT_LOSS}
-        <ImpermanentLoss />
-      {/if}
+        {#if active === keys.IMPERMANENT_LOSS}
+          <ImpermanentLoss />
+        {/if}
+      </wrapper>
     </Content>
   </Card>
 </main>

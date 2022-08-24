@@ -36,6 +36,7 @@
       input$emptyValueUndefined
       input$max={999}
       input$min={0}
+      input$step={0.1}
       label="APR¹"
       prefix="%"
       style="flex: 1"
@@ -49,6 +50,7 @@
       input$emptyValueUndefined
       input$max={99}
       input$min={0}
+      input$step={0.1}
       label="Fee²"
       prefix="%"
       style="flex: 1"
