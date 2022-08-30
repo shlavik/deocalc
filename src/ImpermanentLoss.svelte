@@ -1,80 +1,65 @@
 <script>
-  import Autocomplete from "@smui-extra/autocomplete";
-  import IconButton, { Icon } from "@smui/icon-button";
+  import { Icon } from "@smui/icon-button";
   import LinearProgress from "@smui/linear-progress";
-  import Textfield from "@smui/textfield";
-  import { addHours, formatISO, parseISO, subHours } from "date-fns";
-  import DateInput from "./DateInput.svelte";
+  import { addHours, formatISO, parseISO } from "date-fns";
+
+  import DateInput from "./components/DateInput.svelte";
+  import ValueInput from "./components/ValueInput.svelte";
+  import TokenSelect from "./components/TokenSelect.svelte";
 
   import tokens from "./tokens.json";
   import { debounce, fetchPrice, renderValue } from "./utils.js";
 
-  let elAutocompleteA;
-  let elAutocompleteB;
   let tokenA = tokens[0];
   let tokenB = tokens[5];
-  let dateInitial = parseISO("2022-06-01");
   let dateFuture = addHours(parseISO(new Date().toISOString().slice(0, 10)), 1);
-  let aInitialPrice;
-  let aInitialLoading;
-  let aFuturePrice;
-  let aFutureLoading;
-  let bInitialPrice;
-  let bInitialLoading;
-  let bFuturePrice;
-  let bFutureLoading;
-
-  async function search(input) {
-    if (input === "") return tokens;
-    return tokens.filter(({ symbol }) =>
-      symbol.toLowerCase().includes(input.toLowerCase())
-    );
-  }
-
-  function getOptionLabel(option) {
-    return option?.symbol || "";
-  }
+  let dateInitial = parseISO("2022-06-01");
+  let isLoadingAInitial;
+  let isLoadingAFuture;
+  let isLoadingBInitial;
+  let isLoadingBFuture;
+  let priceAInitial;
+  let priceAFuture;
+  let priceBInitial;
+  let priceBFuture;
 
   const fetchAInitialPriceDebounced = debounce((coinId, dateIso) => {
-    aInitialLoading = true;
+    if (!coinId || !dateIso) return;
+    isLoadingAInitial = true;
     fetchPrice(coinId, dateIso)
-      .then((price) => (aInitialPrice = price))
-      .catch(() => (aInitialPrice = undefined))
-      .finally(() => (aInitialLoading = false));
+      .then((price) => (priceAInitial = price))
+      .finally(() => (isLoadingAInitial = false));
   }, 800);
 
   const fetchAFuturePriceDebounced = debounce((coinId, dateIso) => {
-    aFutureLoading = true;
+    isLoadingAFuture = true;
     fetchPrice(coinId, dateIso)
-      .then((price) => (aFuturePrice = price))
-      .catch(() => (aFuturePrice = undefined))
-      .finally(() => (aFutureLoading = false));
+      .then((price) => (priceAFuture = price))
+      .finally(() => (isLoadingAFuture = false));
   }, 800);
 
   const fetchBInitialPriceDebounced = debounce((coinId, dateIso) => {
-    bInitialLoading = true;
+    isLoadingBInitial = true;
     fetchPrice(coinId, dateIso)
-      .then((price) => (bInitialPrice = price))
-      .catch(() => (bInitialPrice = undefined))
-      .finally(() => (bInitialLoading = false));
+      .then((price) => (priceBInitial = price))
+      .finally(() => (isLoadingBInitial = false));
   }, 800);
 
   const fetchBFuturePriceDebounced = debounce((coinId, dateIso) => {
-    bFutureLoading = true;
+    isLoadingBFuture = true;
     fetchPrice(coinId, dateIso)
-      .then((price) => (bFuturePrice = price))
-      .catch(() => (bFuturePrice = undefined))
-      .finally(() => (bFutureLoading = false));
+      .then((price) => (priceBFuture = price))
+      .finally(() => (isLoadingBFuture = false));
   }, 800);
 
-  $: x1 = 1 / aInitialPrice;
-  $: y1 = 1 / bInitialPrice;
+  $: x1 = 1 / priceAInitial;
+  $: y1 = 1 / priceBInitial;
   $: k = x1 * y1;
-  $: r = aFuturePrice / bFuturePrice;
+  $: r = priceAFuture / priceBFuture;
   $: x2 = Math.sqrt(k / r);
   $: y2 = Math.sqrt(k * r);
-  $: hodl = x1 * aFuturePrice + y1 * bFuturePrice;
-  $: pool = x2 * aFuturePrice + y2 * bFuturePrice;
+  $: hodl = x1 * priceAFuture + y1 * priceBFuture;
+  $: pool = x2 * priceAFuture + y2 * priceBFuture;
   $: loss = pool / hodl - 1;
   $: result = renderValue(-100 * loss, "%");
   $: dateInitialString = dateInitial
@@ -83,59 +68,28 @@
   $: dateFutureString = dateFuture
     ? formatISO(dateFuture, { representation: "date" })
     : "";
-  $: fetchAInitialPriceDebounced(tokenA?.id, dateInitialString);
-  $: fetchAFuturePriceDebounced(tokenA?.id, dateFutureString);
-  $: fetchBInitialPriceDebounced(tokenB?.id, dateInitialString);
-  $: fetchBFuturePriceDebounced(tokenB?.id, dateFutureString);
+  $: fetchAInitialPriceDebounced(tokenA && tokenA.id, dateInitialString);
+  $: fetchAFuturePriceDebounced(tokenA && tokenA.id, dateFutureString);
+  $: fetchBInitialPriceDebounced(tokenB && tokenB.id, dateInitialString);
+  $: fetchBFuturePriceDebounced(tokenB && tokenB.id, dateFutureString);
   $: isLoading =
-    aInitialLoading || aFutureLoading || bInitialLoading || bFutureLoading;
+    isLoadingAInitial ||
+    isLoadingAFuture ||
+    isLoadingBInitial ||
+    isLoadingBFuture;
 </script>
 
 <div id="impermanent-loss">
   <dl class="tokens">
     <dt />
     <dd>
-      <Autocomplete
-        {search}
-        {getOptionLabel}
-        textfield$label="Token A"
-        textfield$spellcheck="false"
-        textfield$variant="outlined"
-        bind:value={tokenA}
-        bind:this={elAutocompleteA}
-      />
-      {#if tokenA !== undefined}
-        <IconButton
-          class="clear"
-          size="button"
-          on:click={() => (elAutocompleteA.focus(), (tokenA = undefined))}
-        >
-          <Icon class="material-icons">clear</Icon>
-        </IconButton>
-      {/if}
+      <TokenSelect label="Token A" {tokens} bind:value={tokenA} />
     </dd>
     <dt />
 
     <dt />
     <dd>
-      <Autocomplete
-        {search}
-        {getOptionLabel}
-        textfield$label="Token B"
-        textfield$spellcheck="false"
-        textfield$variant="outlined"
-        bind:value={tokenB}
-        bind:this={elAutocompleteB}
-      />
-      {#if tokenB !== undefined}
-        <IconButton
-          class="clear"
-          size="button"
-          on:click={() => (elAutocompleteB.focus(), (tokenB = undefined))}
-        >
-          <Icon class="material-icons">clear</Icon>
-        </IconButton>
-      {/if}
+      <TokenSelect label="Token B" {tokens} bind:value={tokenB} />
     </dd>
     <dt />
   </dl>
@@ -150,54 +104,46 @@
     </dd>
 
     <dd>
-      <Textfield
-        class="shaped-outlined"
-        input$emptyValueUndefined
-        label={(tokenA?.symbol || "Token A") + " @ " + dateInitialString}
+      <ValueInput
+        label={((tokenA && tokenA.symbol) || "Token A") +
+          " @ " +
+          dateInitialString}
         prefix="$"
-        variant="outlined"
-        invalid={aInitialPrice === undefined}
-        bind:value={aInitialPrice}
+        bind:value={priceAInitial}
       />
     </dd>
     <dt>
       <Icon class="material-icons">keyboard_double_arrow_right</Icon>
     </dt>
     <dd>
-      <Textfield
-        class="shaped-outlined"
-        input$emptyValueUndefined
-        label={(tokenA?.symbol || "Token A") + " @ " + dateFutureString}
+      <ValueInput
+        label={((tokenA && tokenA.symbol) || "Token A") +
+          " @ " +
+          dateFutureString}
         prefix="$"
-        variant="outlined"
-        invalid={aFuturePrice === undefined}
-        bind:value={aFuturePrice}
+        bind:value={priceAFuture}
       />
     </dd>
 
     <dd>
-      <Textfield
-        class="shaped-outlined"
-        input$emptyValueUndefined
-        label={(tokenB?.symbol || "Token B") + " @ " + dateInitialString}
+      <ValueInput
+        label={((tokenB && tokenB.symbol) || "Token B") +
+          " @ " +
+          dateInitialString}
         prefix="$"
-        variant="outlined"
-        invalid={bInitialPrice === undefined}
-        bind:value={bInitialPrice}
+        bind:value={priceBInitial}
       />
     </dd>
     <dt>
       <Icon class="material-icons">keyboard_double_arrow_right</Icon>
     </dt>
     <dd>
-      <Textfield
-        class="shaped-outlined"
-        input$emptyValueUndefined
-        label={(tokenB?.symbol || "Token B") + " @ " + dateFutureString}
+      <ValueInput
+        label={((tokenB && tokenB.symbol) || "Token B") +
+          " @ " +
+          dateFutureString}
         prefix="$"
-        variant="outlined"
-        invalid={bFuturePrice === undefined}
-        bind:value={bFuturePrice}
+        bind:value={priceBFuture}
       />
     </dd>
   </dl>
@@ -219,10 +165,6 @@
 
 <style>
   #impermanent-loss {
-  }
-
-  :global(#impermanent-loss .mdc-icon-button__icon) {
-    font-size: 16px;
   }
 
   :global(#impermanent-loss dt .material-icons) {

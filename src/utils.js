@@ -8,14 +8,19 @@ export function debounce(fn, ms) {
   };
 }
 
-function normalizePrice(value) {
-  if (value >= 1) return value.toFixed(2);
-  let counter = 0;
-  while (value < 1) {
-    value = 10 * value;
-    counter++;
+function normalizePrice(res) {
+  try {
+    let value = res.market_data.current_price.usd;
+    if (value >= 1) return +value.toFixed(2);
+    let counter = 0;
+    while (value < 1) {
+      value = 10 * value;
+      counter++;
+    }
+    return Math.trunc(100 * value) / 10 ** (counter + 2);
+  } catch (err) {
+    return "N/A";
   }
-  return Math.trunc(100 * value) / 10 ** (counter + 2);
 }
 
 export async function fetchPrice(coinId, dateIso) {
@@ -28,25 +33,26 @@ export async function fetchPrice(coinId, dateIso) {
       `${dd}-${mm}-${yy}`
   )
     .then((res) => res.json())
-    .then((res) => normalizePrice(res.market_data.current_price.usd));
+    .then((res) => normalizePrice(res))
+    .catch(() => "Failed to fetch");
 }
 
 export function renderValue(value, type) {
   if (Number.isNaN(value)) {
     return `N/A`;
   }
-  let toSmall = 0 < value && value < 0.01 ? "<span>&lt;</span>" : "";
+  let toSmall = 0 < value && value < 0.01 ? "<span>&lt;0.01</span>" : "";
+  let strong = toSmall || value.toFixed(2);
   if (type === "%") {
-    return `<strong>${toSmall + value.toFixed(2)}</strong><span>%</span>`;
+    return `<strong>${strong}</strong>&nbsp;<span>%</span>`;
   }
   if (type === "$") {
-    return `<span>$</span>&nbsp;<strong>${toSmall + value.toFixed(2)}</strong>`;
+    return `<span>$</span>&nbsp;<strong>${strong}</strong>`;
   }
-  toSmall = 0 < value && value < 0.1 ? "<span>&lt;</span>" : "";
+  toSmall = 0 < value && value < 0.1 ? "<span>&lt;0.1</span>" : "";
+  strong = toSmall || value.toFixed(1);
   if (type === "days") {
-    return `<strong>${
-      toSmall + value.toFixed(1)
-    }</strong>&nbsp;<span>days</span>`;
+    return `<strong>${strong}</strong>&nbsp;<span>days</span>`;
   }
   return ``;
 }

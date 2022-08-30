@@ -24,12 +24,22 @@ body,
     );
 }
 
+* {
+  scrollbar-color: var(--color-orange) transparent;
+}
+
 input {
   font-weight: 500 !important;
 }
 
-* {
-  scrollbar-color: var(--color-orange) transparent;
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+input[type="number"] {
+  appearance: textfield;
 }
 
 ::-webkit-scrollbar {
@@ -57,14 +67,6 @@ input {
 .smui-autocomplete,
 .smui-autocomplete label {
   width: 100%;
-}
-
-.smui-autocomplete ~ .clear {
-  position: absolute;
-  top: 0;
-  right: 8px;
-  bottom: 0;
-  margin: auto;
 }
 
 .smui-button--color-secondary:not(:disabled) {

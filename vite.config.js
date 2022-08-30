@@ -3,5 +3,9 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default defineConfig({
   base: "/deocalc/",
-  plugins: [svelte()],
+  plugins: [
+    svelte({
+      onwarn() {}, // Do Nothing
+    }),
+  ],
 });

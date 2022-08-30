@@ -1,5 +1,5 @@
 <script>
-  import Textfield from "@smui/textfield";
+  import ValueInput from "./components/ValueInput.svelte";
 
   import { renderValue } from "./utils.js";
 
@@ -17,45 +17,33 @@
 
 <div id="profit-prediction">
   <p>
-    <Textfield
-      class="shaped-outlined"
-      input$emptyValueUndefined
+    <ValueInput
       input$min={0}
       label="Stake¹"
       prefix="$"
       style="width: 100%"
-      type="number"
-      variant="outlined"
       bind:value={stakeUsd}
     />
   </p>
 
   <p class="row">
-    <Textfield
-      class="shaped-outlined"
-      input$emptyValueUndefined
+    <ValueInput
       input$max={999}
       input$min={0}
       input$step={0.1}
       label="APR¹"
       prefix="%"
       style="flex: 1"
-      type="number"
-      variant="outlined"
       bind:value={aprPercent}
     />
 
-    <Textfield
-      class="shaped-outlined"
-      input$emptyValueUndefined
+    <ValueInput
       input$max={99}
       input$min={0}
       input$step={0.1}
       label="Fee²"
       prefix="%"
       style="flex: 1"
-      type="number"
-      variant="outlined"
       bind:value={feePercent}
     />
   </p>

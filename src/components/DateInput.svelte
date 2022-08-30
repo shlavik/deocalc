@@ -1,8 +1,10 @@
 <script>
+  import IconButton, { Icon } from "@smui/icon-button";
   import {
     addHours,
     compareAsc,
     formatISO,
+    isSameDay,
     parseISO,
     startOfDay,
   } from "date-fns";
@@ -10,8 +12,7 @@
   import Textfield from "@smui/textfield";
   import Datepicker from "praecox-datepicker";
 
-  import { clickOutside } from "./actions";
-
+  export let style = undefined;
   export let disabled = false;
   export let label = "";
   export let name = "";
@@ -25,6 +26,22 @@
   let selected = startOfDay(date).valueOf();
   let showDatepicker = true;
   let pickerDone = true;
+
+  function clickOutside(node, cb) {
+    function click(event) {
+      if (event.composedPath().some((el) => el === node)) return;
+      cb(event);
+    }
+    document.body.addEventListener("click", click);
+    return {
+      update(newCb) {
+        cb = newCb;
+      },
+      destroy() {
+        document.body.removeEventListener("click", click);
+      },
+    };
+  }
 
   function input(date) {
     internal = formatISO(date, { representation: "date" });
@@ -41,39 +58,48 @@
     date = new Date(selected);
     showDatepicker = false;
   }
-
   $: input(date);
   $: output(internal);
   $: onSelected(selected);
   $: if (pickerDone) {
     showDatepicker = false;
   }
-  $: invalid =
-    compareAsc(
-      parseISO(internal),
-      addHours(parseISO(new Date().toISOString().slice(0, 10)), 1)
-    ) === 1;
+  $: today = ((_) =>
+    addHours(parseISO(new Date().toISOString().slice(0, 10)), 1))(internal);
+  $: invalid = compareAsc(parseISO(internal), today) === 1;
 </script>
 
-<div
+<wrapper
   class="date-input"
   class:right
-  style:flex={1}
+  {style}
+  style:position="relative"
   use:clickOutside={() => (showDatepicker = false)}
 >
   <Textfield
-    class="shaped-outlined"
-    input$emptyValueUndefined
     {disabled}
+    input$emptyValueUndefined
     {invalid}
     {label}
     {name}
+    required
     type="date"
     variant="outlined"
     on:click={(event) => (event.preventDefault(), (showDatepicker = true))}
     bind:value={internal}
     bind:this={textfieldEl}
   />
+
+  {#if !isSameDay(date, today)}
+    <IconButton
+      class="clear"
+      size="button"
+      title="Reset to today"
+      on:click={() => ((selected = today.valueOf()), textfieldEl.focus())}
+    >
+      <Icon class="material-icons">restore</Icon>
+    </IconButton>
+  {/if}
 
   {#if showDatepicker}
     <div class="drop" on:click={() => textfieldEl.focus()}>
@@ -85,9 +111,17 @@
       />
     </div>
   {/if}
-</div>
+</wrapper>
 
 <style>
+  :global(.date-input .mdc-text-field ~ .clear) {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    bottom: 0;
+    margin: auto;
+  }
+
   .drop {
     --praecox-calendar-custom-height: 290px;
     --praecox-calendar-custom-border-radius: 4px;
