@@ -1,7 +1,6 @@
 <script>
   import IconButton, { Icon } from "@smui/icon-button";
   import {
-    addHours,
     compareAsc,
     formatISO,
     isSameDay,
@@ -58,14 +57,12 @@
     date = new Date(selected);
     showDatepicker = false;
   }
+
   $: input(date);
   $: output(internal);
   $: onSelected(selected);
-  $: if (pickerDone) {
-    showDatepicker = false;
-  }
-  $: today = ((_) =>
-    addHours(parseISO(new Date().toISOString().slice(0, 10)), 1))(internal);
+  $: if (pickerDone) showDatepicker = false;
+  $: today = ((_) => parseISO(new Date().toISOString().slice(0, 10)))(internal);
   $: invalid = compareAsc(parseISO(internal), today) === 1;
 </script>
 
