@@ -79,7 +79,6 @@
     {invalid}
     {label}
     {name}
-    required
     type="date"
     variant="outlined"
     on:click={(event) => (event.preventDefault(), (showDatepicker = true))}
