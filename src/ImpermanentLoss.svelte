@@ -1,7 +1,7 @@
 <script>
   import { Icon } from "@smui/icon-button";
   import LinearProgress from "@smui/linear-progress";
-  import { formatISO, parseISO } from "date-fns";
+  import { formatISO, parseISO, subMonths } from "date-fns";
 
   import DateInput from "./components/DateInput.svelte";
   import ValueInput from "./components/ValueInput.svelte";
@@ -13,7 +13,7 @@
   let tokenA = tokens[0];
   let tokenB = tokens[5];
   let dateFuture = parseISO(new Date().toISOString().slice(0, 10));
-  let dateInitial = parseISO("2022-06-01");
+  let dateInitial = subMonths(dateFuture, 3);
   let isLoadingAInitial;
   let isLoadingAFuture;
   let isLoadingBInitial;
